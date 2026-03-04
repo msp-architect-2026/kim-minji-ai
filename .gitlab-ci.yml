@@ -1,0 +1,22 @@
+stages:
+  - build
+
+variables:
+  IMAGE_NAME: gitlab.local:5050/root/kim-minji-ai
+  IMAGE_TAG: $CI_COMMIT_SHORT_SHA
+  DOCKER_HOST: unix:///var/run/docker.sock
+
+build_and_push:
+  stage: build
+  tags:
+    - arm64
+    - docker
+  before_script:
+    - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD gitlab.local:5050
+  script:
+    - docker build --platform linux/arm64 -t $IMAGE_NAME:$IMAGE_TAG -t $IMAGE_NAME:latest .
+    - docker push $IMAGE_NAME:$IMAGE_TAG
+    - docker push $IMAGE_NAME:latest
+  only:
+    - develop
+    - main
