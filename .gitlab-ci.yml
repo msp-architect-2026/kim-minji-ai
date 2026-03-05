@@ -1,5 +1,6 @@
 stages:
   - build
+  - update-helm
 
 variables:
   IMAGE_NAME: gitlab.local:5050/root/kim-minji-ai
@@ -19,4 +20,24 @@ build_and_push:
     - docker push $IMAGE_NAME:latest
   only:
     - develop
+    - main
+
+update_helm:
+  stage: update-helm
+  tags:
+    - arm64
+    - docker
+  image: alpine:3.18
+  before_script:
+    - apk add --no-cache git
+    - git config --global user.email "ci@gitlab.local"
+    - git config --global user.name "GitLab CI"
+  script:
+    - git clone http://root:mj154415@gitlab.local/root/kim-minji-helm.git
+    - cd kim-minji-helm
+    - sed -i "s|tag:.*|tag: \"$CI_COMMIT_SHORT_SHA\"|" ai-serving/values.yaml
+    - git add ai-serving/values.yaml
+    - git commit -m "ci: update ai image tag to $CI_COMMIT_SHORT_SHA"
+    - git push origin main
+  only:
     - main
