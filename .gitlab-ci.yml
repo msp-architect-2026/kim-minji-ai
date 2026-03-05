@@ -29,15 +29,17 @@ update_helm:
     - docker
   image: alpine:3.18
   before_script:
-    - apk add --no-cache git
+    - apk add --no-cache git wget
+    - wget -qO /usr/local/bin/yq https://github.com/mikefarah/yq/releases/latest/download/yq_linux_arm64
+    - chmod +x /usr/local/bin/yq
     - git config --global user.email "ci@gitlab.local"
     - git config --global user.name "GitLab CI"
   script:
     - git clone http://root:mj154415@gitlab.local/root/kim-minji-helm.git
     - cd kim-minji-helm
-    - sed -i "s|tag:.*|tag: \"$CI_COMMIT_SHORT_SHA\"|" ai-serving/values.yaml
+    - yq e '.image.tag = strenv(IMAGE_TAG)' -i ai-serving/values.yaml
     - git add ai-serving/values.yaml
-    - git commit -m "ci: update ai image tag to $CI_COMMIT_SHORT_SHA"
+    - git commit -m "ci update ai image tag to ${CI_COMMIT_SHORT_SHA}"
     - git push origin main
   only:
     - main
