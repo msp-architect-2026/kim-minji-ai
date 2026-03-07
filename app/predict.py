@@ -50,9 +50,9 @@ def get_model():
 
 def preprocess_image(image_bytes: bytes):
     img = Image.open(io.BytesIO(image_bytes)).convert("L")
-    img = img.resize((28, 28))
+    img = img.resize((26, 26))
     img_array = np.array(img) / 255.0
-    img_array = img_array.reshape(1, 28, 28, 1)
+    img_array = img_array.reshape(1, 26, 26, 3)
     return img_array
 
 
