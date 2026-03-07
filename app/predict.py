@@ -10,9 +10,14 @@ MODEL_PATH = os.getenv("MODEL_PATH", "/tmp/wafer_defect_model.h5")
 MODEL_BUCKET = os.getenv("MODEL_BUCKET", "wafer-model")
 MODEL_KEY = os.getenv("MODEL_KEY", "wafer_defect_model.h5")
 
-MINIO_ENDPOINT = os.getenv("MINIO_ENDPOINT", "http://minio.storage.svc.cluster.local:9000")
+MINIO_ENDPOINT = os.getenv("MINIO_ENDPOINT", "http://minio-minio.storage.svc.cluster.local:9000")
 MINIO_ACCESS_KEY = os.getenv("MINIO_ACCESS_KEY", "minioadmin")
 MINIO_SECRET_KEY = os.getenv("MINIO_SECRET_KEY", "minioadmin123")
+
+CLASS_NAMES = [
+    "Center", "Donut", "Edge-Loc", "Edge-Ring", "Loc",
+    "Near-full", "Random", "Scratch", "none"
+]
 
 model = None
 
@@ -65,7 +70,8 @@ def predict_from_minio(bucket_name: str, object_key: str):
     img_array = preprocess_image(image_bytes)
     predictions = model_instance.predict(img_array)
 
-    predicted_class = int(np.argmax(predictions))
+    predicted_class_idx = int(np.argmax(predictions))
+    predicted_class_name = CLASS_NAMES[predicted_class_idx]
     confidence = float(np.max(predictions))
 
-    return predicted_class, confidence
+    return predicted_class_name, confidence
