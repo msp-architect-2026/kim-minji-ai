@@ -4,10 +4,16 @@ stages:
 variables:
   IMAGE_NAME: gitlab.local:5050/root/kim-minji-ai
   IMAGE_TAG: $CI_COMMIT_SHORT_SHA
-  DOCKER_HOST: unix:///var/run/docker.sock
+  DOCKER_HOST: tcp://localhost:2375
+  DOCKER_TLS_CERTDIR: ""
+  DOCKER_DRIVER: overlay2
 
 build_and_push:
   stage: build
+  image: docker:26
+  services:
+    - name: docker:26-dind
+      command: ["--insecure-registry=gitlab.local:5050"]
   tags:
     - arm64
     - docker
