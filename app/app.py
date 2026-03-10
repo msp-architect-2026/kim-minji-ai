@@ -1,10 +1,23 @@
+from contextlib import asynccontextmanager
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 import traceback
-from predict import predict_from_minio
+from predict import predict_from_minio, get_model
 from prometheus_fastapi_instrumentator import Instrumentator
 
-app = FastAPI()
+model_ready = False
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    global model_ready
+    print("startup: 모델 로딩 시작")
+    get_model()
+    model_ready = True
+    print("startup: 모델 로딩 완료")
+    yield
+    print("shutdown")
+
+app = FastAPI(lifespan=lifespan)
 
 Instrumentator().instrument(app).expose(app)
 
@@ -16,6 +29,8 @@ class PredictRequest(BaseModel):
 
 @app.get("/health")
 def health():
+    if not model_ready:
+        raise HTTPException(status_code=503, detail="Model not ready")
     return {"status": "UP"}
 
 
