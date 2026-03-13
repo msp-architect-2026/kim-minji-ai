@@ -27,7 +27,7 @@ WM-811K 웨이퍼 맵 데이터셋으로 학습한 **CNN 분류 모델을 FastAP
 
 | Repository | 설명 |
 |------------|------|
-| [kim-minji-wiki(https://github.com/msp-architect-2026/kim-minji-wiki) | 프로젝트 메인 (Wiki, 칸반보드) |
+| [kim-minji-wiki](https://github.com/msp-architect-2026/kim-minji-wiki) | 프로젝트 메인 (Wiki, 칸반보드) |
 | [kim-minji-backend](https://github.com/msp-architect-2026/kim-minji-backend) | Spring Boot API 서버 |
 | [kim-minji-frontend](https://github.com/msp-architect-2026/kim-minji-frontend) | React 웹 대시보드 |
 | [kim-minji-helm](https://github.com/msp-architect-2026/kim-minji-helm) | Kubernetes Helm Chart |
@@ -248,4 +248,5 @@ git push (main 브랜치)
 | 평균 응답시간 | `rate(http_request_duration_seconds_sum[1m]) / rate(..._count[1m])` |
 
 <br>
+
 
