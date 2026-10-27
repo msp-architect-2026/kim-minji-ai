@@ -5,3 +5,7 @@ numpy
 tensorflow
 boto3
 prometheus-fastapi-instrumentator>=7.0.0
+opentelemetry-distro
+opentelemetry-exporter-otlp-proto-http
+opentelemetry-instrumentation-fastapi
+opentelemetry-instrumentation-botocore
