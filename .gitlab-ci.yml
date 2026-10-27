@@ -1,5 +1,6 @@
 stages:
   - build
+  - scan
   - update-helm
 
 variables:
@@ -18,6 +19,38 @@ build_and_push:
     - mkdir -p /kaniko/.docker
     - echo "{\"auths\":{\"gitlab.local:5050\":{\"username\":\"$CI_REGISTRY_USER\",\"password\":\"$CI_REGISTRY_PASSWORD\"}}}" > /kaniko/.docker/config.json
     - /kaniko/executor --context $CI_PROJECT_DIR --dockerfile $CI_PROJECT_DIR/Dockerfile --destination $IMAGE_NAME:$IMAGE_TAG --destination $IMAGE_NAME:latest --insecure --skip-tls-verify
+  only:
+    - develop
+    - main
+
+image_scan:
+  stage: scan
+  image:
+    name: aquasec/trivy:0.75.0
+    entrypoint: [""]
+  tags:
+    - arm64
+    - docker
+  variables:
+    # 레지스트리(gitlab.local:5050)는 HTTP라 insecure로 접근한다
+    TRIVY_INSECURE: "true"
+    TRIVY_USERNAME: $CI_REGISTRY_USER
+    TRIVY_PASSWORD: $CI_REGISTRY_PASSWORD
+    TRIVY_NO_PROGRESS: "true"
+    TRIVY_CACHE_DIR: .trivycache/
+  script:
+    - trivy image --severity HIGH,CRITICAL --format json --output trivy-report.json $IMAGE_NAME:$IMAGE_TAG
+    # HIGH/CRITICAL이 있으면 job은 실패(경고)로 표시되지만 allow_failure라 배포는 막지 않는다
+    - trivy image --severity HIGH,CRITICAL --exit-code 1 $IMAGE_NAME:$IMAGE_TAG
+  cache:
+    paths:
+      - .trivycache/
+  artifacts:
+    when: always
+    expire_in: 30 days
+    paths:
+      - trivy-report.json
+  allow_failure: true
   only:
     - develop
     - main
