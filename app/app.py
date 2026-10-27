@@ -20,7 +20,7 @@ async def lifespan(app: FastAPI):
 app = FastAPI(lifespan=lifespan)
 
 # 지연 히스토그램(http_request_duration_seconds, handler별) 버킷. 기본값(0.1, 0.5, 1)으로는 1초 넘는 추론 지연을 구분할 수 없어
-# 알림(AIInferenceSlow)·SLO·KEDA 스케일링이 쓸 수 있도록 10초까지 넓힌다
+# 알림(AIInferenceSlow)·SLO가 쓸 수 있도록 10초까지 넓힌다
 Instrumentator().instrument(app, latency_lowr_buckets=(0.1, 0.25, 0.5, 1, 2, 3, 5, 10)).expose(app)
 
 
