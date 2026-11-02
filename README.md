@@ -73,6 +73,14 @@ WM-811K 웨이퍼 맵 데이터셋으로 학습한 **CNN 분류 모델을 FastAP
 ### GET `/metrics`
 Prometheus 메트릭 수집 엔드포인트 (`prometheus_fastapi_instrumentator`)
 
+### GET·POST `/admin/fault` (실험용, 기본 비활성)
+`FAULT_INJECTION_ENABLED=true`일 때만 열리고, 아니면 `404`를 반환합니다. 켜면 **호출을 받은 Pod만** `/predict`가 `503`을 반환하고 `/health`는 계속 `200`이라, Readiness는 정상인데 추론만 실패하는 상황을 재현할 수 있습니다 (Istio Outlier Detection 실험, kim-minji-infra RUNBOOK 4.15). 상태는 프로세스 메모리에만 있어 Pod를 재시작하면 꺼집니다.
+
+```json
+// Request: delay_seconds는 503을 반환하기 전 대기 시간(초, 기본 0)
+{ "enabled": true, "delay_seconds": 0 }
+```
+
 <br>
 
 ## ▍모델 Lazy Loading 흐름
@@ -176,6 +184,7 @@ Total params: 44,453,259 (169.58 MB)
 | `MINIO_ENDPOINT` | `http://minio-minio.storage.svc.cluster.local:9000` | MinIO 엔드포인트 |
 | `MINIO_ACCESS_KEY` | `minioadmin` | MinIO 액세스 키 |
 | `MINIO_SECRET_KEY` | `minioadmin123` | MinIO 시크릿 키 |
+| `FAULT_INJECTION_ENABLED` | `false` | `true`면 `/admin/fault` 장애 주입 API 활성화 (실험 전용) |
 
 <br>
 
