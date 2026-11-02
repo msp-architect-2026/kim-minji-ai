@@ -42,8 +42,9 @@ class FaultRequest(BaseModel):
     delay_seconds: float = 0.0
 
 
+# async: 동기 def인 /predict와 같은 threadpool을 쓰지 않아, 추론이 밀리거나 지연 장애를 줘도 Readiness 응답이 늦어지지 않는다
 @app.get("/health")
-def health():
+async def health():
     if not model_ready:
         raise HTTPException(status_code=503, detail="Model not ready")
     return {"status": "UP"}
