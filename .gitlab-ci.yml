@@ -18,7 +18,9 @@ build_and_push:
   script:
     - mkdir -p /kaniko/.docker
     - echo "{\"auths\":{\"gitlab.local:5050\":{\"username\":\"$CI_REGISTRY_USER\",\"password\":\"$CI_REGISTRY_PASSWORD\"}}}" > /kaniko/.docker/config.json
-    - /kaniko/executor --context $CI_PROJECT_DIR --dockerfile $CI_PROJECT_DIR/Dockerfile --destination $IMAGE_NAME:$IMAGE_TAG --insecure --skip-tls-verify
+    # 레이어 캐시: RUN 결과를 $IMAGE_NAME/cache에 저장해 다음 빌드에서 재사용 (package/gradle/requirements가 그대로면 설치를 건너뜀)
+    # 캐시 레포도 HTTP 레지스트리라 --insecure-registry·--skip-tls-verify-registry를 같이 준다. 7일 지난 캐시는 쓰지 않는다
+    - /kaniko/executor --context $CI_PROJECT_DIR --dockerfile $CI_PROJECT_DIR/Dockerfile --destination $IMAGE_NAME:$IMAGE_TAG --insecure --skip-tls-verify --cache=true --cache-repo=$IMAGE_NAME/cache --cache-ttl=168h --insecure-registry=gitlab.local:5050 --skip-tls-verify-registry=gitlab.local:5050
   only:
     - develop
     - main
