@@ -1,0 +1,12 @@
+# 빌드 컨텍스트에서 제외. 모델(.h5)은 이미지에 넣지 않는다 (Dockerfile은 requirements.txt·app/만 COPY)
+*.h5
+**/__pycache__
+**/*.pyc
+.git
+.github
+.gitlab-ci.yml
+.omc
+.idea
+.DS_Store
+*.md
+update-helm.sh
