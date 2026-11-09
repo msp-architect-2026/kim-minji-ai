@@ -5,6 +5,7 @@ import os
 import time
 import traceback
 from predict import predict_from_minio, get_model
+from preprocess import InvalidWaferImage
 from prometheus_fastapi_instrumentator import Instrumentator
 
 model_ready = False
@@ -79,6 +80,8 @@ def predict(request: PredictRequest):
             "prediction": predicted_class,
             "confidence": confidence
         }
+    except InvalidWaferImage as e:
+        raise HTTPException(status_code=400, detail=str(e))
     except FileNotFoundError as e:
         raise HTTPException(status_code=503, detail=str(e))
     except Exception as e:

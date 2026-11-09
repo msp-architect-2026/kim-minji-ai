@@ -1,8 +1,7 @@
 import os
-import io
 import numpy as np
 from tensorflow.keras.models import load_model
-from PIL import Image
+from preprocess import preprocess_image
 import boto3
 from botocore.client import Config
 
@@ -53,13 +52,6 @@ def get_model():
     return model
 
 
-
-def preprocess_image(image_bytes: bytes):
-    img = Image.open(io.BytesIO(image_bytes)).convert("RGB")
-    img = img.resize((26, 26))
-    img_array = np.array(img) / 255.0
-    img_array = img_array.reshape(1, 26, 26, 3)
-    return img_array
 
 def predict_from_minio(bucket_name: str, object_key: str):
     s3 = get_s3_client()
