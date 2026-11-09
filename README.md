@@ -101,14 +101,15 @@ pod 기동부터 Ready 전환까지 **약 79초** 소요. 이후 요청은 메�
 
 ## ▍추론 파이프라인
 
+입력은 **웨이퍼 맵 PNG**입니다. 값 0(웨이퍼 밖), 1(양품 다이), 2(불량 다이)를 픽셀 0 / 127 / 255로 저장합니다. 이 3단계가 아닌 이미지는 `400`으로 거부합니다.
+
 ```
 POST /predict 수신
 └─ MinIO에서 이미지 다운로드 (boto3 s3 client)
    └─ preprocess_image()
-      └─ PIL Image.open() → RGB 변환
-         → resize(26, 26)
-         → np.array / 255.0  (0~1 정규화)
-         → reshape(1, 26, 26, 3)
+      └─ 그레이스케일 변환 → 최근접 resize(26, 26)
+         → 픽셀을 0/1/2로 복원 (3단계가 아니면 거부)
+         → 채널별 one-hot (1, 26, 26, 3)
             └─ model.predict()
                └─ argmax → 클래스명, max → confidence 반환
 ```
@@ -170,7 +171,12 @@ Total params: 44,453,259 (169.58 MB)
 | Scratch | 0.94 |
 | none | 1.00 |
 
-> 단순 grayscale→RGB 복사 방식 사용 시 accuracy 약 2% 저하 발생. 반드시 PIL RGB 변환 + `/255.0` 정규화 방식을 사용해야 합니다.
+> 모델은 웨이퍼 맵 값을 채널별로 one-hot한 입력으로 학습됐습니다. RGB 변환 + `/255.0` 입력은 거의 모두 `Random`으로 분류됩니다.
+
+```bash
+# 테스트: 전처리 단위 테스트, MODEL_PATH가 있으면 클래스별 샘플 회귀 테스트까지 실행
+pip install -r requirements-dev.txt && MODEL_PATH=wafer_defect_model.h5 pytest tests
+```
 
 <br>
 
